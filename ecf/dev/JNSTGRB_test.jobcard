@@ -1,16 +1,16 @@
 set -x
 #BSUB -q dev_shared
 #BSUB -P GFS-DEV
-#BSUB -o log.sstpub.%J
-#BSUB -e log.sstpub.%J
-#BSUB -J jsstpub
+#BSUB -o log.nsst.%J
+#BSUB -e log.nsst.%J
+#BSUB -J jnsst
 #BSUB -q dev
 #BSUB -M 2400
 #BSUB -W 10:00
 ##BSUB -R span[ptile=14]
 
 export envir=test         # prod, para or test
-export job=jsstpub
+export job=jnsst
 export pid=$$
 export jobid=${job}.$pid
 export RUN_ENVIR=test
@@ -30,6 +30,8 @@ module load prod_envir
 module load prod_util
 module load grib_util/1.0.6
 module load gempak/7.3.1
+module load ecflow/4.7.1
+module load lsf/10.1
 
 module list
 
@@ -39,22 +41,21 @@ export CDUMP=gdas
 export DATAROOT=/gpfs/dell1/nco/ops/tmpnwprd
 export DBNROOT=/iodprod_dell/dbnet_siphon
 
-#export jlogfile=${COMROOT}/logs/jlogfiles/jlogfile.${job}.${pid}
+export jlogfile=${COMROOT}/logs/jlogfiles/jlogfile.${job}.${pid}
 
 
 if [ "$envir" = 'test' ] ; then
-  export NWROOT=/gpfs/dell2/emc/modeling/noscrub/Xu.Li
-# export COMROOT=/gpfs/dell2/ptmp/Xu.Li/sstpub/com
-  export COMROOT=/gpfs/dell2/emc/modeling/noscrub/Xu.Li/com
-  export DATAROOT=/gpfs/dell2/ptmp/Xu.Li/sstpub/work
+  export NWROOT=/gpfs/dell2/emc/modeling/noscrub/Xu.Li/git
+  export COMROOT_test=/gpfs/dell2/emc/modeling/noscrub/Xu.Li/com
+  export DATAROOT=/gpfs/dell2/ptmp/Xu.Li/nsst/work
   export DBNROOT=${UTILROOT}/fakedbn
 
-  mkdir -p $COMROOT
+  mkdir -p $COMROOT_test
   mkdir -p $DATAROOT
   mkdir -p $DBNROOT
 
-  export jlogfile=${COMROOT}/logs/${envir}/jlogfile.${job}.${pid}
-  mkdir -p ${COMROOT}/logs/${envir}
+  export jlogfile=${COMROOT_test}/logs/${envir}/jlogfile.${job}.${pid}
+  mkdir -p ${COMROOT_test}/logs/${envir}
 fi
 
 export SENDECF=YES
@@ -63,9 +64,9 @@ export SENDDBN_NTC=NO
 export SENDCOM=YES
 export SENDWEB=NO
 export KEEPDATA=YES
-export model=sstpub
+export model=nsst
 
-modelver=v1.0
+modelver=v1.0.0
 
-export HOMEsstpub=${NWROOT}/${model}.$modelver
-ksh ${HOMEsstpub}/jobs/JSSTPUB
+export HOMEnsst=${NWROOT}/${model}.$modelver
+ksh ${HOMEnsst}/jobs/JNSST
