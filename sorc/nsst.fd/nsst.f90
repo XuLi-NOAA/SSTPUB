@@ -1,4 +1,4 @@
-program sstpub
+program nsst
 !
 !$$$  main program documentation block
 ! Abstract:  Generate GRIB SST analysis files at lat/lon grids
@@ -29,7 +29,7 @@ program sstpub
 
 !$$$
 
- use set_para, only: init_setup
+ use set_para, only: init_setup,sfcio
 
  implicit none
 
@@ -57,7 +57,8 @@ program sstpub
  real,    allocatable, dimension(:,:) :: tf_clm               ! SST Climatology at target grids and valid time (nx,ny)
  real,    allocatable, dimension(:)   :: xlats                ! latitudes of target grids (ny)
  real,    allocatable, dimension(:)   :: xlons                ! longitudes of target grids (nx)
- integer, allocatable, dimension(:,:) :: mask                 ! mask at target grids (0 = water, 1 = land, 2 = sea ice) (nx,ny)
+ integer, allocatable, dimension(:,:) :: mask                 ! mask at target grids (0 = water, 1 = others) (nx,ny)
+ integer, allocatable, dimension(:,:) :: masks                ! mask at target grids (0 = water, 1 = land, 2 = sea ice) (nx,ny)
 !
 ! Arrays target grids (nx*ny)
 !
@@ -94,7 +95,7 @@ program sstpub
  integer :: maskflag      ! 1 = with bitmap; 0 = w/o bitmap
  logical :: lputsi
  character (len=10) :: catime
- namelist/setup/catime,lputsi,dsearch,nx,ny
+ namelist/setup/catime,sfcio,lputsi,dsearch,nx,ny
 
  call init_setup
 !
@@ -106,7 +107,12 @@ program sstpub
 
  write(*,*) 'catime,nx,ny = ',catime,nx,ny
 
- allocate( tf(nx,ny),sice(nx,ny),tf_clm(nx,ny),sal_clm(nx,ny),mask(nx,ny) )
+!
+! force ih = 0 to make it has the same time as th eold SST files
+!
+ ih = 0
+
+ allocate( tf(nx,ny),sice(nx,ny),tf_clm(nx,ny),sal_clm(nx,ny),mask(nx,ny),masks(nx,ny) )
  allocate( mask_ij(nx*ny),tf_ij(nx*ny))
  allocate( xlats(ny),xlons(nx),xlats_ij(nx*ny),xlons_ij(nx*ny) )
 !
@@ -151,11 +157,23 @@ program sstpub
 !
 ! Get dimensions of sfcanl, allocate arrays and read NSST tf
 !
- call get_sfcanl_dim(fin_sfcanl,ny_nst,nx_nst)
+ if ( trim(sfcio) == 'nemsio' ) then
+    call get_sfcanl_dim_nems(fin_sfcanl,ny_nst,nx_nst)
+ elseif ( trim(sfcio) == 'ncio' ) then
+    call get_sfcanl_dim_nc(fin_sfcanl,ny_nst,nx_nst)
+ else
+    write(*,*) 'invalid sfcio. abort'
+    stop
+ endif
+
  write(*,'(a,8I5)') 'iy,im,id,ih,ny_nst,nx_nst,ny,nx : ',iy,im,id,ih,ny_nst,nx_nst,ny,nx
  allocate( tf_nst(nx_nst,ny_nst),mask_nst(nx_nst,ny_nst) )
  allocate( xlons_nst(nx_nst),xlats_nst(ny_nst) )
- call read_tf_sfcanl(fin_sfcanl,tf_nst,mask_nst,xlats_nst,xlons_nst,ny_nst,nx_nst)
+ if ( trim(sfcio) == 'nemsio' ) then
+    call read_tf_sfcanl_nems(fin_sfcanl,tf_nst,mask_nst,xlats_nst,xlons_nst,ny_nst,nx_nst)
+ elseif ( trim(sfcio) == 'ncio' ) then
+    call read_tf_sfcanl_nc(fin_sfcanl,tf_nst,mask_nst,xlats_nst,xlons_nst,ny_nst,nx_nst)
+ endif
 !
 ! get sea ice analysis (daily and available 6-houly files) at taget grids (nx,ny)
 !
@@ -163,6 +181,7 @@ program sstpub
 !
 ! modify mask for sea ice
 !
+ masks = mask
  do j = 1, ny
     do i = 1, nx
        if ( sice(i,j) <= 1.0 .and. sice(i,j) >= 0.15 ) then
@@ -240,7 +259,7 @@ program sstpub
 ! write out tf as grib1 and grib2 format
 !
  maskflag=0      ! no bitmap
- call togrib(fout_tf_grb,tf,mask,maskflag,nx,ny,iy,im,id,ih)
+ call togrib(fout_tf_grb,tf,masks,maskflag,nx,ny,iy,im,id,ih)
 
  if ( nx == 4320 ) then
 !
@@ -287,7 +306,7 @@ program sstpub
 
  maskflag=1      ! with bitmap
  if ( nx /= 1440 ) then
-    call togrib(fout_tf_grb_awips,tf,mask,maskflag,nx,ny,iy,im,id,ih)
+    call togrib(fout_tf_grb_awips,tf,masks,maskflag,nx,ny,iy,im,id,ih)
     if ( nx == 4320 ) then
        write(*,*) 'generate half degree bitmap grib SST file while processing 1/12 degree file'
        call togrib(fout_tf_grb_0p5_awips,tf_0p5,mask_0p5,maskflag,nx_0p5,ny_0p5,iy,im,id,ih)
@@ -296,5 +315,5 @@ program sstpub
 
  write(*,*) 'All Done'
 
-end program sstpub 
+end program nsst 
 

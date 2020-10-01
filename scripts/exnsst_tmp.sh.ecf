@@ -32,9 +32,10 @@ mailbody=mailbody.txt
 rm -f $mailbody
 
 #
-# SFCIO: ncio or nemsio
+# SFCIO
 #
   SFCIO='ncio'
+# SFCIO='nemsio'
 #
 # logical variable if fill land grids or not
 #
@@ -58,6 +59,11 @@ rm -f $mailbody
 # input FV3GFS 6-hourlay surface analysis file at Gaussian grids, for T1534, 3072 x 1536
 # If unavailable for the current day, check previous day
 #
+
+ if [ $SFCIO="ncio" ] ; then
+    COMINgdas=/gpfs/dell3/ptmp/emc.glopara/ROTDIRS/v16rt2/gfs/para/gdas.$PDY
+ fi
+# /gpfs/dell3/ptmp/emc.glopara/ROTDIRS/v16rt2/gfs/para/gdas.20200927/12/atmos/gdas.t12z.sfcanl.nc
   for SDIR in $COMINgdas/${cyc} ${COMINgdas/$PDY/$PDYm1}/${cyc}
   do
      if [ $SFCIO = "nemsio" ] ; then
@@ -79,6 +85,8 @@ rm -f $mailbody
         break
      fi
   done
+# ln -fs /gpfs/dell3/ptmp/emc.glopara/ROTDIRS/v16rt2/gfs/para/gdas.20200927/12/atmos/gdas.t12z.sfcanl.nc sfcanl
+# ln -fs /gpfs/dell1/nco/ops/com/gfs/prod/gdas.20200927/12/gdas.t12z.sfcanl.nemsio sfcanl
   if [ ! -s sfcanl ] ; then
      err_exit "FATAL ERROR: Could not find input file $COMINgdas/${cyc}/$sfcanl_name nor backup $SDIR/$sfcanl_name"
   fi
@@ -100,6 +108,7 @@ rm -f $mailbody
         break
      fi
   done
+  ln -s /gpfs/dell3/emc/global/dump/gdas.${PDY}/06/$CDUMP.t06z.seaice.5min.blend.grb iceanl
   if [ ! -s iceanl ] ; then
      err_exit "FATAL ERROR: Could not find input file $COMINgdas/${cyc}/$iceanl_name nor backup $SDIR/$iceanl_name"
   fi

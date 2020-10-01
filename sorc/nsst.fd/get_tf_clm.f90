@@ -38,9 +38,9 @@ subroutine get_tf_clm(mask_ij,xlats_ij,xlons_ij,ny,nx,iy,im,id,ih,dsearch,miss_f
 !
  if ( nx == nxc .and. ny == nyc ) then
     tf_clm(:,:) = tf_clm0(:,:)
-    write(*,'(a,2F9.3)') 'same dimensions, tf_clm, min : ',minval(tf_clm),maxval(tf_clm)
+    write(*,'(a,2F9.3)') 'same dimensions, tf_clm, min, max : ',minval(tf_clm),maxval(tf_clm)
  else
-    write(*,'(a,4I8)') 'different dimensions,nx,ny,nxc,nyc : ',nx,ny,nxc,nyc
+    write(*,'(a,4I8)') ' get_tf_clm: different dimensions,nx,ny,nxc,nyc : ',nx,ny,nxc,nyc
     sfcflag=0
     cmask = 0
     cmask_ij = 0

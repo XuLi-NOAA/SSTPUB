@@ -42,16 +42,16 @@ subroutine get_seaice(xlats_ij,xlons_ij,ny,nx,sice)
 !
  if ( nx == nxs .and. ny == nys ) then
     sice(:,:) = sice0(:,:)
-    write(*,'(a,4I8,2F9.3)') 'same dimensions,nx,ny,nxs,nys : ',nx,ny,nxs,nys,minval(sice),maxval(sice)
+    write(*,'(a,4I8,2F9.3)') 'get_seaice: same dimensions,nx,ny,nxs,nys : ',nx,ny,nxs,nys,minval(sice),maxval(sice)
  else
     sfcflag=0
     smask=0
     mask_ij=0
-    write(*,'(a,4I8)') 'different dimensions,nx,ny,nxs,nys : ',nx,ny,nxs,nys
+!   write(*,'(a,4I8)') 'different dimensions,nx,ny,nxs,nys : ',nx,ny,nxs,nys
     call lalo_to_tile(sice0,   smask,   sxlats,  sxlons,  nys, nxs, &
                       sice_ij, mask_ij, xlats_ij,xlons_ij,ny,  nx, &
                       sfcflag,0.0,0,0.0)
-    write(*,'(a,2F9.3)') 'done with lalo_to_tile for sice',minval(sice_ij),maxval(sice_ij)
+!   write(*,'(a,2F9.3)') 'done with lalo_to_tile for sice',minval(sice_ij),maxval(sice_ij)
     sice(:,:) = reshape (sice_ij, (/nx,ny/) )
  endif
 end subroutine get_seaice

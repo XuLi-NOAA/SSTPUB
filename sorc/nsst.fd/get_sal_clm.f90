@@ -39,11 +39,11 @@ subroutine get_sal_clm(xlats_ij,xlons_ij,ny,nx,iy,im,id,ih,sal_clm)
     sal_clm(:,:) = sal_clm0(:,:)
 !   write(*,'(a,2f9.3)') 'same dimensions, sal_clm, min : ',minval(sal_clm),maxval(sal_clm)
  else
-!   write(*,'(a,4i8)') 'different dimensions,nx,ny,nxc,nyc : ',nx,ny,nxc,nyc
+    write(*,'(a,4i8)') 'different dimensions,nx,ny,nxc,nyc : ',nx,ny,nxc,nyc
     call intp_tile(sal_clm0,  cxlats,  cxlons,  nyc, nxc, &
                    sal_clm_ij,xlats_ij,xlons_ij,ny,  nx)
 !   write(*,'(a,2f9.3)') 'sal_clm0, min, max                        : ',minval(sal_clm0),maxval(sal_clm0)
-    write(*,'(a,2f9.3)') 'done with intp_tile for sal_clm, min, max : ',minval(sal_clm_ij),maxval(sal_clm_ij)
+!   write(*,'(a,2f9.3)') 'done with intp_tile for sal_clm, min, max : ',minval(sal_clm_ij),maxval(sal_clm_ij)
 
     sal_clm(:,:) = reshape (sal_clm_ij, (/nx,ny/) )
  endif

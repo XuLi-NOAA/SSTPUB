@@ -56,7 +56,7 @@ subroutine lalo_to_tile(tf_lalo,mask_lalo,dlats_lalo,dlons_lalo,jdim_lalo,idim_l
  real,    allocatable, dimension(:,:,:) :: agrid,s2c
 
  print*
- print*,'interpolate from lat/lon grids to any one grid with known lat/lon'
+ print*,'lalo_to_tile: interpolate from lat/lon grids to any one grid with known lat/lon'
 
  xlats_lalo = dlats_lalo*deg2rad
  xlons_lalo = dlons_lalo*deg2rad
@@ -271,7 +271,7 @@ subroutine intp_tile(tf_lalo,dlats_lalo,dlons_lalo,jdim_lalo,idim_lalo, &
  real,    allocatable, dimension(:,:,:) :: agrid,s2c
 
  print*
- print*,'interpolate from lat/lon grids to any one grid with known lat/lon'
+ print*,'intp_tile: interpolate from lat/lon grids to any one grid with known lat/lon'
 
  xlats_lalo = dlats_lalo*deg2rad
  xlons_lalo = dlons_lalo*deg2rad
@@ -291,7 +291,6 @@ subroutine intp_tile(tf_lalo,dlats_lalo,dlons_lalo,jdim_lalo,idim_lalo, &
 ! four lalo points. does not account for mask.  that
 ! happens later.
 !----------------------------------------------------------------------
-
  call remap_coef( 1, idim_tile, 1, jdim_tile, idim_lalo, jdim_lalo, &
                   xlons_lalo, xlats_lalo, id1, id2, jdc, s2c, agrid )
 

@@ -29,8 +29,8 @@
  integer, dimension(imx,imy), intent(in) :: mask
  integer, intent(in) :: maskflag,imx,imy,iyear,imon,iday,ihr
 ! Local
- integer, dimension(25)      :: kpds
- integer, dimension(22)      :: kgds
+ integer, dimension(200)      :: kpds=0
+ integer, dimension(200)      :: kgds=0
  real,    dimension(imx,imy) :: out,out_mask
  logical*1, dimension(imx,imy) :: lb
  integer :: icen,iyr,kf,i,j,jj,iret
@@ -90,28 +90,37 @@
 !                  DEFINITION SECTION (PDS) OF GRIB MESSAGE
 !
 !KGDS     - ARRAY CONTAINING GDS ELEMENTS.
- kgds(1) =     0  ! data representation type
- kgds(2) =   imx  ! points on latitude circle
- kgds(3) =   imy  ! points on longitude meridian
- loninc  = nint(360000./real(imx))
- latinc  = nint(180000./real(imy))
- kgds(4) = 90000-nint(90000./real(imy)) ! latitude of origin
- kgds(5) = nint(180000./real(imx))      ! longitude of origin
- kgds(6) =   128  ! resolution flag (right adj copy of octet 17)
- kgds(7) = -90000+nint(90000./real(imy)) ! latitude of extreme point
- !kgds(8) = nint(-180000./real(imx))      ! longitude of extreme point
- kgds(8) = 0                 ! longitude of extreme point
- kgds(9) = latinc ! di Latitudinal direction of increment
- kgds(10)= loninc ! dj longitudinal direction increment
- kgds(11)=     0  ! scanning mode flag (right adj copy of octet 28)
- kgds(19)=     0  ! number of vertical coordinate parameters
- kgds(20)=   255  ! octet number of the list of vertical coordinate parameters
-!                        OR
-!                   octet number of the list of numbers of points in each row
-!                        OR
-!                   255 if neither are present
- kgds(21)=     0  ! for grids with pl, number of points in grid
- kgds(22)=     0  ! number of words in each row
+ kgds(1) =     0                         ! data representation type
+ kgds(2) =   imx                         ! points on latitude circle
+ kgds(3) =   imy                         ! points on longitude meridian
+ loninc  = nint(360000./real(imx))       ! lon increment
+ latinc  = nint(180000./real(imy))       ! lat increment
+!
+! the latitide from S to N for 1/4 and 1 degree
+! the latitide from N to S for others
+!
+ if ( imx == 1440 ) then
+    kgds(4) = -90000+nint(90000./real(imy)) ! latitude of origin
+    kgds(7) =  90000-nint(90000./real(imy)) ! latitude of extreme point
+    kgds(11)=    64                         ! scanning mode flag (right adj copy of octet 28)
+ else
+    kgds(4) =  90000-nint(90000./real(imy)) ! latitude of origin
+    kgds(7) = -90000+nint(90000./real(imy)) ! latitude of extreme point
+    kgds(11)=     0                         ! scanning mode flag (right adj copy of octet 28)
+ endif
+ kgds(5) = nint(180000./real(imx))          ! longitude of origin
+ kgds(6) =   128                            ! resolution flag (right adj copy of octet 17)
+ kgds(8) = nint(-180000./real(imx))         ! longitude of extreme point
+ kgds(9) = latinc                           ! di Latitudinal direction of increment
+ kgds(10)= loninc                           ! dj longitudinal direction increment
+ kgds(19)=     0                            ! number of vertical coordinate parameters
+ kgds(20)=   255                            ! octet number of the list of vertical coordinate parameters
+                                            !    OR
+                                            ! octet number of the list of numbers of points in each row
+                                            !    OR
+                                            !  255 if neither are present
+ kgds(21)=     0                            ! for grids with pl, number of points in grid
+ kgds(22)=     0                            ! number of words in each row
 
 !print*,'kpds:',kpds
 
@@ -120,18 +129,36 @@
  enddo
 !print*,'kgds:',kgds
 
- do j = 1, imy
-    jj = imy+1-j
-    do i = 1, imx
-       out(i,jj)=anal(i,j)
-       out_mask(i,jj)=mask(i,j)
-    enddo
-    if ( maskflag /= 0 ) then
+!
+! save data from S to N for 1/4 and 1 degree resolutions
+! save data from N to S for others
+!
+ if ( imx == 1440 ) then
+    do j = 1, imy
        do i = 1, imx
-          lb(i,jj) = mask(i,j) == 0
+          out(i,j)=anal(i,j)
+          out_mask(i,j)=mask(i,j)
        enddo
-    endif
- enddo
+       if ( maskflag /= 0 ) then
+          do i = 1, imx
+             lb(i,j) = mask(i,j) == 0
+          enddo
+       endif
+    enddo
+ else
+    do j = 1, imy
+       jj = imy+1-j
+       do i = 1, imx
+          out(i,jj)=anal(i,j)
+          out_mask(i,jj)=mask(i,j)
+       enddo
+       if ( maskflag /= 0 ) then
+          do i = 1, imx
+             lb(i,jj) = mask(i,j) == 0
+          enddo
+       endif
+    enddo
+ endif
 
  call baopen(lun_grb,fname,iret)
  call putgb(lun_grb,kf,kpds,kgds,lb,out,iret)
@@ -141,11 +168,6 @@
  if (imx == 1440) then
     kpds(5) =  81                       ! indicator of mask
     kpds(22)=   0                       ! units decimal scale factor
-    do j = 1, imy
-       do i = 1, imx
-          if ( out_mask(i,j) == 2.0 )  out_mask(i,j) = 0.0
-       enddo
-    enddo
     call putgb(lun_grb,kf,kpds,kgds,lb,out_mask,iret)
     write(*,*) 'add mask to grib file'
  endif

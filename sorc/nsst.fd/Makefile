@@ -1,8 +1,8 @@
 SHELL=	/bin/sh
 
-CMD= sstpub.x
+CMD= nsst.x
 
-OBJS =  read_tf_sfcanl.o get_mask.o get_tim_wgt.o get_tf_clm.o get_seaice.o get_sal_clm.o lalo_to_cubed.o nc_check.o togrib.o tfreez.o sor_lapl.o iterate.o putsi.o setup.o sstpub.o
+OBJS =  read_tf_sfcanl.o get_mask.o get_tim_wgt.o get_tf_clm.o get_seaice.o get_sal_clm.o lalo_to_cubed.o nc_check.o togrib.o tfreez.o sor_lapl.o iterate.o putsi.o setup.o nsst.o
 
 build: $(CMD)
 
@@ -10,7 +10,7 @@ $(CMD):	$(OBJS)
 	$(FCOMP) $(FFLAGS) -I$(NEMSIO_INC) $(NETCDF_INCLUDE) -o $(CMD) $(OBJS) $(NETCDF_LDFLAGS_F) $(NEMSIO_LIB) $(BACIO_LIB4) $(W3NCO_LIBd)
 
 read_tf_sfcanl.o:  read_tf_sfcanl.f90
-	$(FCOMP) $(FFLAGS) -I$(NEMSIO_INC) -c read_tf_sfcanl.f90
+	$(FCOMP) $(FFLAGS) $(NETCDF_INCLUDE) -I$(NEMSIO_INC) -c read_tf_sfcanl.f90
 get_mask.o:  get_mask.f90
 	$(FCOMP) $(FFLAGS) -c get_mask.f90
 get_tim_wgt.o:  get_tim_wgt.f90
@@ -37,11 +37,11 @@ putsi.o:  putsi.f90
 	$(FCOMP) $(FFLAGS) -c putsi.f90
 setup.o:  setup.f90
 	$(FCOMP) $(FFLAGS) -c setup.f90
-sstpub.o:  sstpub.f90
-	$(FCOMP) $(FFLAGS) -I$(NEMSIO_INC) -c sstpub.f90
+nsst.o:  nsst.f90
+	$(FCOMP) $(FFLAGS) -I$(NEMSIO_INC) -c nsst.f90
 
 install:
-	cp ${CMD} ../../exec
+	cp ${CMD} ../../exec/
 
 clean:
 	rm -f *.o *.mod ${CMD} 
