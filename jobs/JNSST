@@ -5,6 +5,13 @@ set -xa
 date
 export PS4='$SECONDS + '
 
+#################################################
+# get work directory
+################################################
+export DATA=${DATA:-${DATAROOT:?}/${jobid:?}}   # temporary running directory
+mkdir -p $DATA
+cd $DATA
+
 ####################################
 # Specify NET and RUN Name and model
 ####################################
@@ -33,12 +40,6 @@ export COMOUTwmo=${COMOUTwmo:-${COMOUT}/wmo}
 export COMOUTgempak=${COMOUTgempak:-${COMOUT}/gempak}
 mkdir -p $COMOUT $COMOUTwmo $COMOUTgempak
 
-#################################################
-# get work directory
-################################################
- export DATA=${DATA:-${DATAROOT:?}/${jobid:?}}   # temporary running directory
- mkdir -p $DATA
- cd $DATA
 #################################################
 # Specify job's execution areas (directory paths)
 #################################################

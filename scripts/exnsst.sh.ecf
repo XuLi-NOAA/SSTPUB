@@ -88,7 +88,14 @@ rm -f $mailbody
 #
   for SDIR in $COMINgdas/${cyc} ${COMINgdas/$PDY/$PDYm1}/${cyc}
   do
-     iceanl_name=$CDUMP.$cycle.seaice.5min.blend.grb
+     if [ $SFCIO = "nemsio" ] ; then
+       iceanl_name=$CDUMP.$cycle.seaice.5min.blend.grb
+     elif [ $SFCIO="ncio" ] ; then
+       iceanl_name=atmos/$CDUMP.$cycle.seaice.5min.blend.grb
+     else
+       echo "invalid sfcio"
+       exit
+     fi
      if [ -s $SDIR/$iceanl_name ] ; then
         ln -fs $SDIR/$iceanl_name iceanl
         if [ $SDIR != $COMINgdas/${cyc} ]; then
