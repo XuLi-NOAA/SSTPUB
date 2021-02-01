@@ -31,6 +31,8 @@ Input
 4. Monthly salinity climatology at T1534 Gaussian grids, interpolated from 1 degree Levitus surface salinity climatology.
 5. Surface mask fix file for ½, ¼ and 1/12 lat/lon grids
 
+Note: All fix files are compressed with gzip, and need to be uncompressed with gunzip before running
+
 Output
 
 RTG-like SST files
